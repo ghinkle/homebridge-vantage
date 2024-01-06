@@ -1,7 +1,13 @@
 var net = require('net');
-var sprintf = require("sprintf-js").sprintf, inherits = require("util").inherits, Promise = require('promise');
-var parser = require('xml2json'), libxmljs = require("libxmljs"), sleep = require('sleep');
-var events = require('events'), util = require('util'), fs = require('fs');
+var sprintf = require("sprintf-js").sprintf;
+var inherits = require("util").inherits;
+var Promise = require('promise');
+var parser = require('xml2json');
+var libxmljs = require("libxmljs");
+var sleep = require('sleep');
+var events = require('events');
+var util = require('util');
+var fs = require('fs');
 var Accessory, Characteristic, Service, UUIDGen;
 
 module.exports = function (homebridge) {
