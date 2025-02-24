@@ -1,7 +1,6 @@
 var net = require('net');
 var sprintf = require("sprintf-js").sprintf;
 var inherits = require("util").inherits;
-var Promise = require('promise');
 var parser = require('xml2json');
 var libxmljs = require("libxmljs");
 var sleep = require('sleep');
@@ -40,7 +39,7 @@ class VantageInfusion {
 	 * Start the command session. The InFusion controller (starting from the 3.2 version of the
 	 * firmware) must be configured without encryption or password protection. Support to SSL
 	 * and password protected connection will be introduced in the future, the IoT world is
-	 * a bad place! 
+	 * a bad place!
 	 */
 	StartCommand() {
 		this.command = net.connect({ host: this.ipaddress, port: 3001 }, () => {
@@ -105,14 +104,16 @@ class VantageInfusion {
 
 	/**
 	 * Send the IsInterfaceSupported request to the InFusion controller,
-	 * it needs the VID of the object and the IID (InterfaceId) taken 
+	 * it needs the VID of the object and the IID (InterfaceId) taken
 	 * previously with the configuration session
 	 * @return true, false or a promise!
 	 */
 	isInterfaceSupported(item, interfaceName) {
 		if (this.interfaces[interfaceName] === undefined) {
-			return new Promise((resolve, reject) => {
-				resolve({ 'item': item, 'interface': interfaceName, 'support': false });
+			return Promise.resolve({
+				'item': item,
+				'interface': interfaceName,
+				'support': false
 			});
 		} else {
 			/**
@@ -122,13 +123,22 @@ class VantageInfusion {
 			 */
 			var interfaceId = this.interfaces[interfaceName];
 
-			return new Promise((resolve, reject) => {
-				this.once(sprintf("isInterfaceSupportedAnswer-%d-%d", parseInt(item.VID), parseInt(interfaceId)), (_support) => {
-					resolve({ 'item': item, 'interface': interfaceName, 'support': _support });
-				}
+			return new Promise((resolve) => {
+				this.once(sprintf("isInterfaceSupportedAnswer-%d-%d",
+					parseInt(item.VID),
+					parseInt(interfaceId)),
+					(_support) => {
+						resolve({
+							'item': item,
+							'interface': interfaceName,
+							'support': _support
+						});
+					}
 				);
 				sleep.usleep(5000);
-				this.command.write(sprintf("INVOKE %s Object.IsInterfaceSupported %s\n", item.VID, interfaceId));
+				this.command.write(sprintf("INVOKE %s Object.IsInterfaceSupported %s\n",
+					item.VID,
+					interfaceId));
 			});
 		}
 	}
@@ -142,8 +152,8 @@ class VantageInfusion {
 	Discover() {
 		var configuration = net.connect({ host: this.ipaddress, port: 2001 }, () => {
 			/**
-			 * List interfaces, list configuration and then check if a specific interface 
-			 * is supported by the recognized devices. 
+			 * List interfaces, list configuration and then check if a specific interface
+			 * is supported by the recognized devices.
 			 */
 			console.log("load dc file")
 
@@ -282,7 +292,7 @@ class VantageInfusion {
 	}
 
 	/**
-	 * Send the set HSL color request to the controller 
+	 * Send the set HSL color request to the controller
 	 */
 	RGBLoad_DissolveHSL(vid, h, s, l, time) {
 		var thisTime = time || 500;
@@ -681,7 +691,7 @@ class VantagePlatform {
 	}
 
 	getDevices() {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			if (!this.ready) {
 				this.log.debug("VantagePlatform for InFusion Controller (wait for getDevices promise)");
 				this.callbackPromesedAccessories = resolve;
@@ -843,7 +853,7 @@ class VantageLoad {
 		{
 
 			this.lightBulbService.getCharacteristic(Characteristic.RotationSpeed)
-					.on('set', (level, callback) => {						
+					.on('set', (level, callback) => {
 						this.bri = parseInt(level);
 						this.log(sprintf("fan level %s = %d", this.address, this.bri));
 						this.parent.infusion.Load_Dim(this.address, this.bri);
@@ -854,10 +864,10 @@ class VantageLoad {
 						this.log.debug(sprintf("get fanlevel %s = %d", this.address, this.bri));
 						callback(null, this.bri);
 					});
-		
+
 		}
-		
-		
+
+
 			//console.log(this.lightBulbService); //here
 			this.lightBulbService.getCharacteristic(Characteristic.On)
 				.on('set', (level, callback) => {
@@ -911,8 +921,8 @@ class VantageLoad {
 					.on('get', (callback) => {
 						callback(null, this.hue);
 					});
-			}		
-		
+			}
+
 
 		this.parent.infusion.getLoadStatus(this.address);
 		return [service, this.lightBulbService];
