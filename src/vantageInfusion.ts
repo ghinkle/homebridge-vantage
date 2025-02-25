@@ -228,7 +228,7 @@ export class VantageInfusion extends EventEmitter {
                   fs.writeFileSync(backupFilePath, fileContent);
                   this.config.log.info(`Saved backup file to ${backupFilePath}`);
                 } catch (error) {
-                  this.config.log.error(`Failed to save backup file: ${error.message}`);
+                  this.config.log.error(`Failed to save backup file: ${(error as Error).message}`);
                 }
 
                 // Process the file content to extract devices
@@ -497,8 +497,8 @@ export class VantageInfusion extends EventEmitter {
       this.config.log.info(`Discovered ${devices.length} devices`);
     } catch (error) {
       this.config.log.error('Error processing backup file:', error);
-      this.config.log.debug('Error details:', error.stack);
-
+      this.config.log.debug('Error details:', (error as Error).stack);
+      
       // Try a more direct approach as a last resort
       this.extractDevicesDirectly(fileContent, areas, devices);
     }
@@ -607,7 +607,7 @@ export class VantageInfusion extends EventEmitter {
       this.config.log.info(`Discovered ${deviceCount} devices using direct extraction`);
     } catch (error) {
       this.config.log.error('Error extracting devices directly:', error);
-      this.config.log.debug('Error details:', error.stack);
+      this.config.log.debug('Error details:', (error as Error).stack);
     }
   }
 

@@ -27,7 +27,7 @@ export class VantagePlatform implements DynamicPlatformPlugin {
     try {
       this.validatedConfig = ConfigValidator.validate(config);
     } catch (error) {
-      this.log.error('Configuration error:', error.message);
+      this.log.error('Configuration error:', (error as Error).message);
       this.log.info('Example configuration:', ConfigValidator.getConfigExample());
       throw error;
     }
@@ -74,6 +74,13 @@ export class VantagePlatform implements DynamicPlatformPlugin {
       error: (message: string, ...params: any[]) => this.log.error(message, ...params),
       debug: () => {},
       log: () => {},
+      success: (message: string, ...params: any[]) => {
+        // Log success messages for important events
+        if (message.includes('Discovered') ||
+            message.includes('Connected')) {
+          this.log.info(message, ...params);
+        }
+      },
     };
   }
 
@@ -363,5 +370,24 @@ export class VantagePlatform implements DynamicPlatformPlugin {
 
     // Add the restored accessory to the accessories array so we can track it
     this.accessories.push(accessory);
+  }
+
+  private getLogger(): Logger {
+    return {
+      info: (message: string, ...params: any[]) => {
+        this.log.info(message, ...params);
+      },
+      warn: (message: string, ...params: any[]) => {
+        this.log.warn(message, ...params);
+      },
+      error: (message: string, ...params: any[]) => {
+        this.log.error(message, ...params);
+      },
+      debug: () => {},
+      log: () => {},
+      success: (message: string, ...params: any[]) => {
+        this.log.info(message, ...params);
+      },
+    };
   }
 }
