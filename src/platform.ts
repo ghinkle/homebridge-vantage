@@ -7,7 +7,7 @@ import { VantageBlind } from './accessories/blind';
 import { VantageSwitch } from './accessories/switch';
 import { ConfigValidator, VantagePlatformConfig } from './config';
 
-export const PLATFORM_NAME = 'VantageControls';
+export const PLATFORM_NAME = 'VantageControlsModern';
 export const PLUGIN_NAME = 'homebridge-vantage-modern';
 
 export class VantagePlatform implements DynamicPlatformPlugin {
