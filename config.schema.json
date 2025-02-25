@@ -1,0 +1,44 @@
+{
+  "pluginAlias": "VantageControlsModern",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "ipaddress": {
+        "type": "string",
+        "required": true,
+        "format": "ipv4",
+        "description": "IP address of the Vantage controller"
+      },
+      "username": {
+        "type": "string",
+        "description": "Username for authentication (if required)"
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for authentication (if required)"
+      },
+      "omit": {
+        "type": "string",
+        "pattern": "^\\d+(,\\d+)*$",
+        "description": "Comma-separated list of VIDs to omit"
+      },
+      "range": {
+        "type": "string",
+        "pattern": "^\\d+,\\d+$",
+        "description": "Range of VIDs to include (format: min,max)"
+      },
+      "usecache": {
+        "type": "boolean",
+        "default": true,
+        "description": "Use cached device configuration"
+      },
+      "debug": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable debug logging"
+      }
+    }
+  }
+} 

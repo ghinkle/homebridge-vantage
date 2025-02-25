@@ -1,63 +1,77 @@
-# VantagePlugin
-VantageControls InFusion plugin for homebridge: https://github.com/nfarina/homebridge
+# VantageControls Modern for Homebridge
+A TypeScript reimplementation of the VantageControls InFusion plugin for homebridge with updated dependencies and modern Node.js support.
 
-VantageControls (http://www.vantagecontrols.com/) InFusion is an High End solution that can manage:
-- lighting (standard on/off/dimmed lights and RGB solutions using DMX, DALI or wireless bulb like Hue or LiFX)
-- thermoregulation (with own or third party thermostats and HVAC systems)
-- curtains, doors (third party)
+VantageControls (http://www.vantagecontrols.com/) InFusion is a high-end solution that can manage:
+- Lighting (standard on/off/dimmed lights and RGB solutions using DMX, DALI or wireless bulbs like Hue or LiFX)
+- Thermoregulation (with own or third party thermostats and HVAC systems)
+- Curtains, doors (third party)
 - A/V systems (own and third party)
-- security systems (third party)
+- Security systems (third party)
 - Weather stations
 
-With this plugin you will control all systems that is already connected to Vantage without additional 
-support from the manufacturer of the connected device, for example you can control an AC system without the 
-HomeKit support of the specific vendor because you are already control it via InFusion's Driver that count up to 18000 
-supported devices.
-
+With this plugin, you can control all systems that are already connected to Vantage without additional 
+support from the manufacturer of the connected device. For example, you can control an AC system without the 
+HomeKit support of the specific vendor because you are already controlling it via InFusion's Driver that supports up to 18,000 devices.
 
 # Installation
-Install plugin with npm install -g homebridge-vantage
-Add platform within config.json of you homebridge instance:
+Install the plugin with npm:
+```
+npm install -g homebridge-vantage-modern
+```
 
-    {
-        "platforms": [{
-            "platform": "VantageControls",
-            "ipaddress": "192.168.1.1"
-            }], 
-        "bridge": {
-            "username": "CC:22:3D:E3:CE:31", 
-            "name": "Vantage HomeBridge Adapter", 
-            "pin": "342-52-220", 
-            "port": 51826
-        }, 
-        "description": "My Fantastic Vantage System", 
-        "accessories": []
-    }
+Add the platform to the config.json of your homebridge instance:
 
-Restart homebridge
-Enjoy!
+```json
+{
+    "platforms": [{
+        "platform": "VantageControlsModern",
+        "ipaddress": "192.168.1.1",
+        "debug": false
+    }], 
+    "bridge": {
+        "username": "CC:22:3D:E3:CE:31", 
+        "name": "Vantage HomeBridge Adapter", 
+        "pin": "342-52-220", 
+        "port": 51826
+    }, 
+    "description": "My Fantastic Vantage System", 
+    "accessories": []
+}
+```
+
+Restart homebridge and enjoy!
+
+# Configuration Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| ipaddress | string | Yes | - | IP address of the Vantage controller |
+| username | string | No | - | Username for authentication (if required) |
+| password | string | No | - | Password for authentication (if required) |
+| omit | string | No | - | Comma-separated list of VIDs to omit |
+| range | string | No | - | Range of VIDs to include (format: min,max) |
+| usecache | boolean | No | true | Use cached device configuration |
+| debug | boolean | No | false | Enable debug logging |
 
 # Supported Devices
 
-Currently it should be possible to control all loads registered on you InFusion device, but I'm working on the detection of the difference with Relay, Dimmer and RGB Loads; I'm ready to support Thermostats and other devices but I prefer to keep the program stable before publish further functionalities. My test plan consists of:
-- RGB Philips Hue lights and Osram Lightify (controlled by Vantage, my Hue Bridge is not compatible with HomeKit and I'm happy of this)
-- LiFX (controlled by Vantage)
-- Legrand/BTicino MyHome Relay and Dimmer
-- Legrand/BTicino MyHome Thermostat
-- Youus DMX Driver
+Currently, it should be possible to control all loads registered on your InFusion device:
+- Dimmers and Relay Loads
+- RGB Lights
+- Blinds and Shades
+- Thermostats
 
-Stay tuned!
+# Troubleshooting
 
-## Configuration
+If you encounter issues with the plugin:
 
-All supported items will automatically added to the HomeBridge device inventory; use the "Exclude from Widgets" and "Display Name" property to remove some devices or change the displayed name. 
-
-# TODOS
-
-- manage multiple feedbacks coming from the InFusion Controller when multiple values are sent from HomeKit
-- test with standard Relay/Dimmer devices (...ehm...)
+1. Enable debug logging by setting `"debug": true` in your config
+2. Check the Homebridge logs for detailed information
+3. Make sure your Vantage controller is accessible at the specified IP address
+4. Verify that port 3001 is open on your Vantage controller
 
 # Disclaimer
 
-I'm furnishing this software "as is". I do not provide any warranty of the item whatsoever, whether express, implied, or statutory, including, but not limited to, any warranty of merchantability or fitness for a particular purpose or any warranty that the contents of the item will be error-free.
-The development of this module is not supported by Vantage Controls or Apple. These vendors and me are not responsible for direct, indirect, incidental or consequential damages resulting from any defect, error or failure to perform.  
+This software is provided "as is". No warranty of any kind is provided, whether express, implied, or statutory, including, but not limited to, any warranty of merchantability or fitness for a particular purpose or any warranty that the contents of the item will be error-free.
+
+The development of this module is not supported by Vantage Controls or Apple. These vendors and the developers are not responsible for direct, indirect, incidental, or consequential damages resulting from any defect, error, or failure to perform.  
