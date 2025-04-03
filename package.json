@@ -5,7 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "clean": "rimraf ./dist",
+    "lint": "eslint src/**.ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint"
   },
   "keywords": [
     "homebridge-plugin",
@@ -27,7 +31,11 @@
   "devDependencies": {
     "@types/node": "^16.11.7",
     "@types/sprintf-js": "^1.1.2",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.0",
     "homebridge": "^1.6.0",
+    "rimraf": "^3.0.2",
     "typescript": "^4.9.5"
   },
   "homepage": "https://github.com/yourusername/homebridge-vantage-modern#readme",
@@ -37,5 +45,9 @@
   },
   "bugs": {
     "url": "https://github.com/yourusername/homebridge-vantage-modern/issues"
-  }
+  },
+  "files": [
+    "dist",
+    "config.schema.json"
+  ]
 }
