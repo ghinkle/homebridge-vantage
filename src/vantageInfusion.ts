@@ -61,8 +61,13 @@ export class VantageInfusion extends EventEmitter {
         socket.write(`LOGIN ${this.config.username} ${this.config.password}\r\n`);
       }
 
-      // Register for status updates
-      socket.write('STATUSON\r\n');
+      // First request status for all devices
+      this.config.log.debug('Requesting status for all devices');
+      socket.write('STATUS ALL\r\n');
+
+      // Then enable all status updates and logging
+      this.config.log.debug('Enabling status updates and logging');
+      socket.write('ELENABLE 1 AUTOMATION ON\r\nELENABLE 1 EVENT ON\r\nELENABLE 1 STATUS ON\r\nELENABLE 1 STATUSEX ON\r\nELENABLE 1 SYSTEM ON\r\nELLOG AUTOMATION ON\r\nELLOG EVENT ON\r\nELLOG STATUS ON\r\nELLOG STATUSEX ON\r\nELLOG SYSTEM ON\r\n');
     });
 
     socket.on('data', (data) => this.handleCommandData(data));

@@ -1,12 +1,10 @@
 {
   "name": "homebridge-vantage-modern",
-  "version": "0.2",
+  "version": "0.3",
   "description": "Homebridge plugin for Vantage Controls systems",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build",
-    "postinstall": "npm run build",
     "watch": "tsc --watch"
   },
   "keywords": [

@@ -36,7 +36,7 @@ export class VantagePlatform implements DynamicPlatformPlugin {
     this.Characteristic = this.api.hap.Characteristic;
 
     // Log plugin initialization
-    this.log.info('VantageControlsLTS platform initialized');
+    this.log.info('VantageControlsModern platform initialized');
     this.log.debug('Debug logging is ' + (this.validatedConfig.debug ? 'enabled' : 'disabled'));
 
     this.infusion = new VantageInfusion({
