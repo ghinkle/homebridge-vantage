@@ -8,6 +8,8 @@ export interface VantagePlatformConfig extends PlatformConfig {
   range?: string;
   usecache?: boolean;
   debug?: boolean;
+  reconnectInterval?: number; // Periodic reconnect interval in hours (default: 6)
+  reconnectOnFailure?: boolean; // Auto-reconnect on connection failure (default: true)
 }
 
 export class ConfigValidator {
@@ -48,6 +50,8 @@ export class ConfigValidator {
       ipaddress: config.ipaddress,
       usecache: config.usecache ?? true,
       debug: config.debug ?? false,
+      reconnectInterval: config.reconnectInterval ?? 6, // Default: reconnect every 6 hours
+      reconnectOnFailure: config.reconnectOnFailure ?? true, // Default: auto-reconnect on failure
     };
   }
 
@@ -60,7 +64,9 @@ export class ConfigValidator {
       "omit": "1,2,3",
       "range": "1,100",
       "usecache": true,
-      "debug": false
+      "debug": false,
+      "reconnectInterval": 6,
+      "reconnectOnFailure": true
     }, null, 2);
   }
 } 

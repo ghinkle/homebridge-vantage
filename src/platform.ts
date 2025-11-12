@@ -47,6 +47,8 @@ export class VantagePlatform implements DynamicPlatformPlugin {
       range: this.validatedConfig.range || '',
       log: this.validatedConfig.debug ? this.log : this.createSilentLogger(),
       debug: this.validatedConfig.debug,
+      reconnectInterval: this.validatedConfig.reconnectInterval,
+      reconnectOnFailure: this.validatedConfig.reconnectOnFailure,
     });
 
     this.setupEventHandlers();
@@ -66,7 +68,9 @@ export class VantagePlatform implements DynamicPlatformPlugin {
         // Always log important info messages
         if (message.includes('Discovered') ||
             message.includes('Connected') ||
-            message.includes('Disconnected')) {
+            message.includes('Disconnected') ||
+            message.includes('reconnect') ||
+            message.includes('Reconnect')) {
           this.log.info(message, ...params);
         }
       },
