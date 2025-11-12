@@ -14,12 +14,6 @@ interface VantageInfusionConfig {
   debug: boolean;
 }
 
-interface VantageCommand {
-  type: string;
-  vid: number;
-  value: number | string;
-}
-
 interface VantageDevice {
   VID: string;
   Name: string;
@@ -36,8 +30,16 @@ interface VantageArea {
 }
 
 export class VantageInfusion extends EventEmitter {
-  private readonly commandSocket: Socket;
+  private commandSocket: Socket;
   private readonly interfaces: Record<string, number> = {};
+  private reconnectTimer?: NodeJS.Timeout;
+  private reconnectAttempts = 0;
+  private readonly maxReconnectDelay = 60000; // 1 minute max
+  private readonly initialReconnectDelay = 5000; // 5 seconds initial
+  private periodicReconnectTimer?: NodeJS.Timeout;
+  private readonly periodicReconnectInterval = 4 * 60 * 60 * 1000; // 4 hours
+  private isConnected = false;
+  private isReconnecting = false;
 
   constructor(private readonly config: VantageInfusionConfig) {
     super();
@@ -46,14 +48,18 @@ export class VantageInfusion extends EventEmitter {
     this.config.debug = this.config.log['level'] === 'debug';
 
     this.commandSocket = this.setupCommandSocket();
+    this.setupPeriodicReconnect();
   }
 
   private setupCommandSocket(): Socket {
     const socket = new Socket();
+    socket.setKeepAlive(true, 60000); // Enable TCP keep-alive with 60 second interval
 
     this.config.log.info(`Attempting to connect to Vantage controller at ${this.config.ipAddress}:3001`);
 
     socket.connect(3001, this.config.ipAddress, () => {
+      this.isConnected = true;
+      this.reconnectAttempts = 0; // Reset reconnection attempts on successful connection
       this.config.log.info('Connected to Vantage controller');
 
       if (this.config.username && this.config.password) {
@@ -73,8 +79,13 @@ export class VantageInfusion extends EventEmitter {
     socket.on('data', (data) => this.handleCommandData(data));
     socket.on('error', (error) => this.handleSocketError(error));
     socket.on('close', () => {
+      this.isConnected = false;
       this.config.log.warn('Disconnected from Vantage controller');
-      this.setupReconnection();
+      this.scheduleReconnect();
+    });
+    socket.on('timeout', () => {
+      this.config.log.warn('Socket timeout detected');
+      socket.destroy();
     });
 
     return socket;
@@ -145,7 +156,7 @@ export class VantageInfusion extends EventEmitter {
   }
 
   public async discover(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const configSocket = new Socket();
       let buffer = '';
       const areas: Record<string, VantageArea> = {};
@@ -403,9 +414,9 @@ export class VantageInfusion extends EventEmitter {
 
       // Log all found areas
       this.config.log.info(`Found ${Object.keys(areas).length} areas in backup file`);
-      for (const areaId of Object.keys(areas)) {
+      // for (const _areaId of Object.keys(areas)) {
         // this.config.log.info(`Area: ${areas[areaId].Name} (VID: ${areaId})`);
-      }
+      // }
 
       // If we still have no areas, create a default one
       if (Object.keys(areas).length === 0) {
@@ -732,16 +743,73 @@ export class VantageInfusion extends EventEmitter {
     this.commandSocket.write(sprintf('GETBLIND %s\n', vid));
   }
 
-  private setupReconnection(): void {
-    this.commandSocket.on('close', () => {
-      this.config.log.warn('Connection closed, attempting to reconnect...');
-      setTimeout(() => {
-        this.commandSocket.connect({
-          host: this.config.ipAddress,
-          port: 3001
-        });
-      }, 5000); // Retry every 5 seconds
-    });
+  private scheduleReconnect(): void {
+    // Prevent multiple reconnection attempts
+    if (this.isReconnecting) {
+      return;
+    }
+
+    this.isReconnecting = true;
+
+    // Clear any existing reconnect timer
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
+
+    // Calculate exponential backoff delay
+    const delay = Math.min(
+      this.initialReconnectDelay * Math.pow(2, this.reconnectAttempts),
+      this.maxReconnectDelay
+    );
+
+    this.reconnectAttempts++;
+    this.config.log.info(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay / 1000} seconds...`);
+
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnect();
+    }, delay);
+  }
+
+  private reconnect(): void {
+    this.config.log.info('Attempting to reconnect to Vantage controller...');
+    
+    // Clean up existing socket
+    try {
+      this.commandSocket.removeAllListeners();
+      this.commandSocket.destroy();
+    } catch (error) {
+      this.config.log.debug('Error cleaning up old socket:', error);
+    }
+
+    // Create new socket
+    this.commandSocket = this.setupCommandSocket();
+    this.isReconnecting = false;
+  }
+
+  private setupPeriodicReconnect(): void {
+    // Set up periodic reconnection every 4 hours to prevent stale connections
+    this.periodicReconnectTimer = setInterval(() => {
+      if (this.isConnected && !this.isReconnecting) {
+        this.config.log.info('Performing periodic reconnection to maintain connection health');
+        this.commandSocket.destroy(); // This will trigger the close event and reconnection
+      }
+    }, this.periodicReconnectInterval);
+  }
+
+  public cleanup(): void {
+    // Clean up timers and connections
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
+    if (this.periodicReconnectTimer) {
+      clearInterval(this.periodicReconnectTimer);
+    }
+    try {
+      this.commandSocket.removeAllListeners();
+      this.commandSocket.destroy();
+    } catch (error) {
+      this.config.log.debug('Error during cleanup:', error);
+    }
   }
 
   private hashString(str: string): string {
